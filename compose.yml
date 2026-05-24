@@ -6,9 +6,17 @@ services:
     ports:
       - "3306:3306"
     deploy:
-      replicas: 3
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
+        reservations:
+          cpus: "0.25"
+      replicas: 1  # Reduced to 1 to prevent DB split-brain
     networks:
       - mynetwork
+    volumes:
+      - database:/data
 
   application:
     image: saiyaswanth76/automation:app
@@ -16,11 +24,17 @@ services:
       - "1111:8080"
     deploy:
       replicas: 3
-    depends_on:
-      - devopsdb
+    # depends_on:  # Commented out as Swarm ignores this
+    #   - devopsdb
     networks:
       - mynetwork
+    volumes:
+      - appdata:/yash
 
 networks:
   mynetwork:
     driver: overlay
+
+volumes:
+  database:
+  appdata:
